@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 #include "vertice.h"
 #include "arista.h"
 //#include <queue>
@@ -7,7 +7,9 @@
 //#include <map>
 //#include <unordered_set>
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::string;
 
 class Grafo
 {
@@ -15,98 +17,75 @@ class Grafo
   int tamano;
 
 public:
-  Grafo();
-  bool EstaVacio(); // Retorna true si el grafo está vacío
-  int ObtenerTamano(); // Retorna el número de vertices en el grafo
-  Vertice* ObtenerVertice(string nombre); // Retornar el vertice que tenga el nombre especificado
-  void InsertaVertice(string nombre); // Inserta un vertice al grafo
-  void InsertaArista(string ori, string dest, int peso); // Inserta arista entre los dos vertices especificados con el peso especificado
-  void MostrarListaAdyacencia(); // Mostrar todos los vertices con sus aristas y pesos
-  void EliminarVertice(string nombre); // Elimina el vertice con el nombre especificado
-  void EliminarArista(string ori, string dest); // Elimina la arista entre los dos vertices especificados
-  void EliminarTodo(); // Elimina todos los vertices y aristas del grafo
-  void EliminarAristas(Vertice* vertice); // Elimina las aristas del vertice especificado
-  void EliminarAristasDestino(string dest); // Elimina las aristas que tienen como destino el vertice especificado
-  void RecorridoAnchura(string origen); // Recorre el grafo con el algoritmo de anchura
-  void RecorridoProfundidad(string origen); // Recorre el grafo con el algoritmo de profundidad
-  void PrimeroEnAnchura(string origen, string destino); // Despliega la ruta entre los dos vertices especificados con el algoritmo de primero en anchura
-  void PrimeroEnProfundidad(string origen, string destino); // Despliega la ruta entre los dos vertices especificados con el algoritmo de primero en profundidad
-  void PrimeroElMejor(string origen, string destino); // Despliega la ruta entre los dos vertices especificados con el algoritmo de primero el mejor
-  //void MostrarRutaEncontrada(stack<pair<Vertice*, Vertice*>> pilaPar, Vertice* vdest); // Despliega la ruta encontrada
-  //void Dijkstra(string origen); // Despliega la ruta más corta entre el origen y los demás vertices
-  //void Kruskal(); // Genera el arbol recubridor minimo con el algoritmo de kruskal
-  //void Prim(string origen);// Genera el arbol recubridor minimo con el algoritmo de Prim
-};
-
-Grafo::Grafo()
-{
-  primero = NULL;
-  tamano = 0;
-}
-
-bool Grafo::EstaVacio()
-{
-  return tamano == 0;
-}
-
-int Grafo::ObtenerTamano()
-{
-  return tamano;
-}
-
-Vertice* Grafo::ObtenerVertice(string nombre)
-{
-  Vertice* i = primero;
-
-  while (i != NULL)
+  Grafo()
   {
-    if (i->nombre == nombre)
-      return i;
-
-    i = i->sig;
+    primero = NULL;
+    tamano = 0;
   }
 
-  return NULL;
-}
-
-void Grafo::InsertaVertice(string nombre)
-{
-  if (ObtenerVertice(nombre) == NULL)
+  bool EstaVacio()
   {
-    Vertice* nuevo = new Vertice(nombre);
+    return tamano == 0;
+  }
 
-    if (EstaVacio())
-      primero = nuevo;
-    else
+  int ObtenerTamano()
+  {
+    return tamano;
+  }
+
+  Vertice* ObtenerVertice(string id)
+  {
+    Vertice* i = primero;
+
+    while (i != NULL)
     {
-      Vertice *i = primero;
+      if (i->id == id)
+        return i;
 
-      while (i->sig != NULL)
-        i = i->sig;
-
-      i->sig = nuevo;
+      i = i->sig;
     }
 
-    tamano++;
+    return NULL;
   }
-  else
-    cout << "Ese vertice ya existe en el grafo" << endl;
-}
 
-void Grafo::InsertaArista(string ori, string dest, int peso)
+  void InsertaVertice(string id, string nombre, string tipo, string direccion)
+  {
+    if (ObtenerVertice(id) == NULL)
+    {
+      Vertice* nuevo = new Vertice(id, nombre, tipo, direccion);
+
+      if (EstaVacio())
+        primero = nuevo;
+      else
+      {
+        Vertice *i = primero;
+
+        while (i->sig != NULL)
+          i = i->sig;
+
+        i->sig = nuevo;
+      }
+
+      tamano++;
+    }
+    else
+      cout << "Error: El centro medico con ID '" << id << "' ya existe." << endl;
+  }
+
+void InsertaArista(string idOri, string idDest, float distancia, string tipoRuta)
 {
-  Vertice* vori = ObtenerVertice(ori);
-  Vertice* vdest = ObtenerVertice(dest);
+  Vertice* vori = ObtenerVertice(idOri);
+  Vertice* vdest = ObtenerVertice(idDest);
 
   if (vori == NULL)
-    cout << "El vertice origen no existe" << endl;
+    cout << "Error: El vertice origen '" << idOri << "' no existe" << endl;
 
   if (vdest == NULL)
-    cout << "El vertice destino no existe" << endl;
+    cout << "Error: El vertice destino '" << idDest << "' no existe" << endl;
 
   if (vori != NULL && vdest != NULL)
   {
-    Arista* nueva = new Arista(vdest, peso);
+    Arista* nueva = new Arista(vdest, distancia, tipoRuta);
 
     if (vori->ari == NULL)
       vori->ari = nueva;
@@ -119,175 +98,215 @@ void Grafo::InsertaArista(string ori, string dest, int peso)
 
       j->sig = nueva;
     }
+    cout << "Ruta insertada: " << idOri << " -> " << idDest << " (" << distancia << "km, " << tipoRuta << ")" << endl;
   }
 }
 
 
-void Grafo::MostrarListaAdyacencia()
+void MostrarListaAdyacencia()
 {
   Vertice* i = primero;
+  cout << "--- Lista de rutas medicas ---" << endl;
 
   while (i != NULL)
   {
     Arista* j = i->ari;
-    cout << i->nombre << " = ";
+    cout << "[" << i->id << " | " << i->nombre << " (" << i->tipo << ")]" << " -> ";
 
     while (j != NULL)
     {
-      cout << i->nombre << "->" << j->peso << "->" << j->dest->nombre << ",";
-      j = j->sig;
+      cout <<"[" << j->dest->id << " (" << j->distancia << "km, " << j->tipoRuta << ")]" << " -> ";
+        j = j->sig;
     }
 
-    cout << endl;
+    cout << "NULL" << endl;
     i = i->sig;
   }
 }
 
-void Grafo::EliminarAristas(Vertice* vertice)
+bool ExisteRuta(string idOri, string idDest)
+  {
+    Vertice* vori = ObtenerVertice(idOri);
+    if (vori == NULL)
+    {
+      cout << "Vertice origen " << idOri << " no existe." << endl;
+      return false;
+    }
+    Arista* j = vori->ari;
+    while (j != NULL)
+    {
+      if (j->dest->id == idDest) // Compara el ID del destino
+        return true;
+      j = j->sig;
+    }
+    return false;
+  }
+
+
+void EliminarAristas(Vertice* vertice)
 {
   if (vertice == NULL)
-    return;
-
-  Arista* i = vertice->ari;
-
-  while (vertice->ari != NULL)
-  {
-    i = vertice->ari;
-    vertice->ari = vertice->ari->sig;
-    cout << "Arista " << vertice->nombre << "->" << i->dest->nombre << " eliminada" << endl;
-    delete(i);
+      return;
+    Arista* i = vertice->ari;
+    while (vertice->ari != NULL)
+    {
+      i = vertice->ari;
+      vertice->ari = vertice->ari->sig;
+      cout << "  -> Arista de salida " << vertice->id << "->" << i->dest->id << " eliminada" << endl;
+      delete(i);
   }
 }
 
-void Grafo::EliminarAristasDestino(string dest)
+void EliminarAristasDestino(string idDest)
 {
   Vertice* i = primero;
-
-  while (i != NULL)
-  {
-    if (i->nombre == dest || i->ari == NULL)
+    while (i != NULL)
     {
+      if (i->ari == NULL) // Si el vértice no tiene aristas, continúa
+      {
+        i = i->sig;
+        continue;
+      }
+
+      // Caso 1: La arista a borrar es la primera de la lista
+      while (i->ari != NULL && i->ari->dest->id == idDest)
+      {
+        Arista* j = i->ari;
+        i->ari = i->ari->sig;
+        cout << "  -> Arista de entrada " << i->id << "->" << idDest << " eliminada" << endl;
+        delete(j);
+      }
+
+      // Caso 2: La arista a borrar está en medio o al final
+      Arista* x = i->ari;
+      if (x != NULL) 
+      {
+        Arista* y = x->sig;
+        while (y != NULL)
+        {
+          if (y->dest->id == idDest)
+          {
+            x->sig = y->sig;
+            cout << "  -> Arista de entrada " << i->id << "->" << idDest << " eliminada" << endl;
+            delete(y);
+            y = x->sig; // Reevaluar el siguiente nodo
+          }
+          else
+          {
+            x = y;
+            y = y->sig;
+          }
+        }
+      }
       i = i->sig;
-      continue;
+    }
+  }
+
+void EliminarVertice(string id)
+{
+    Vertice* victima = NULL;
+    Vertice* anterior = NULL;
+
+    if (primero == NULL) {
+      cout << "El grafo esta vacio" << endl;
+      return;
     }
 
-    if (i->ari->dest->nombre == dest)
+    // Caso 1: Es el primer vértice
+    if (primero->id == id)
     {
-      Arista* j = i->ari;
-      i->ari = i->ari->sig;
-      cout << "Arista " << i->nombre << "->" << dest << " eliminada" << endl;
-      delete(j);
+      victima = primero;
+      primero = primero->sig;
+    }
+    // Caso 2: Es cualquier otro vértice
+    else
+    {
+      anterior = primero;
+      while(anterior->sig != NULL)
+      {
+        if (anterior->sig->id == id)
+        {
+          victima = anterior->sig;
+          anterior->sig = victima->sig; // Lo desconectamos de la lista
+          break;
+        }
+        anterior = anterior->sig;
+      }
+    }
+
+    // Si encontramos el vértice
+    if (victima != NULL)
+    {
+      cout << "Eliminando vertice [" << victima->id << " | " << victima->nombre << "]" << endl;
+      EliminarAristas(victima); // Elimina sus rutas de salida
+      EliminarAristasDestino(victima->id); // Elimina rutas que llegan a él
+      delete(victima);
+      tamano--;
+      cout << "Vertice eliminado." << endl;
     }
     else
     {
-      Arista* x = i->ari;
-      Arista* y = x->sig;
-
-      while (y != NULL)
-      {
-        if (y->dest->nombre == dest)
-        {
-          x->sig = y->sig;
-          cout << "Arista " << i->nombre << "->" << dest << " eliminada" << endl;
-          delete(y);
-        }
-
-        x = x->sig;
-        if(x==NULL)
-          y=NULL;
-        else
-          y=x->sig;
-      }
+      cout << "Error: El vertice con ID '" << id << "' no existe" << endl;
     }
-
-    i = i->sig;
   }
-}
 
-void Grafo::EliminarVertice(string nombre)
-{
-  if (primero->nombre == nombre)
+void EliminarArista(string idOri, string idDest)
   {
-    Vertice* i = primero;
-    primero = primero->sig;
-    EliminarAristas(i);
-    EliminarAristasDestino(i->nombre);
-    cout << "Vertice " << nombre << " fue eliminado" << endl;
-    delete(i);
-    tamano--;
-  }
-  else
-  {
-    Vertice* i = primero;
-    Vertice* j = i->sig;
-    bool existe = false;
+    Vertice* vori = ObtenerVertice(idOri);
+    Vertice* vdest = ObtenerVertice(idDest);
 
-    while (j != NULL)
+    if (vori == NULL)
     {
-      if (j->nombre == nombre)
-      {
-        i->sig = j->sig;
-        EliminarAristas(j);
-        EliminarAristasDestino(j->nombre);
-        cout << "Vertice " << nombre << " fue eliminado" << endl;
-        delete(j);
-        tamano--;
-        existe = true;
-        break;
-      }
-
-      i = j;
-      j = j->sig;
+      cout << "Error: El vertice origen '" << idOri << "' no existe" << endl;
+      return;
+    }
+    if (vdest == NULL)
+    {
+      cout << "Error: El vertice destino '" << idDest << "' no existe" << endl;
+      return;
     }
 
-    if (!existe)
-      cout << "El vertice especificado no existe" << endl;
-  }
-}
+    if (vori->ari == NULL)
+    {
+      cout << "Error: El vertice '" << idOri << "' no tiene aristas." << endl;
+      return;
+    }
 
-void Grafo::EliminarArista(string ori, string dest)
-{
-  Vertice* vori = ObtenerVertice(ori);
-  Vertice* vdest = ObtenerVertice(dest);
-
-  if (vori == NULL)
-    cout << "El vertice origen no existe" << endl;
-
-  if (vdest == NULL)
-    cout << "El vertice destino no existe" << endl;
-
-  if (vori != NULL && vdest != NULL)
-  {
+    // Caso 1: Es la primera arista de la lista
     if (vori->ari->dest == vdest)
     {
       Arista* i = vori->ari;
       vori->ari = vori->ari->sig;
-      cout << "Arista " << ori << "->" << dest << " eliminada" << endl;
+      cout << "Arista " << idOri << "->" << idDest << " eliminada" << endl;
       delete(i);
     }
+    // Caso 2: Es otra arista
     else
     {
       Arista* i = vori->ari;
       Arista* j = i->sig;
+      bool encontrada = false;
 
       while (j != NULL)
       {
         if (j->dest == vdest)
         {
           i->sig = j->sig;
-          cout << "Arista " << ori << "->" << dest << " eliminada" << endl;
+          cout << "Arista " << idOri << "->" << idDest << " eliminada" << endl;
           delete(j);
+          encontrada = true;
           break;
         }
-
         i = j;
         j = j->sig;
       }
+      
+      if (!encontrada)
+         cout << "Error: La arista " << idOri << "->" << idDest << " no existe." << endl;
     }
   }
-}
 
-void Grafo::EliminarTodo()
+void EliminarTodo()
 {
   Vertice* i = primero;
 
@@ -303,3 +322,30 @@ void Grafo::EliminarTodo()
   }
 }
 
+void MostrarAdyacentes(string id)
+  {
+    Vertice* v = ObtenerVertice(id);
+    if (v == NULL)
+    {
+      cout << "No se encontro el centro medico con ID: " << id << endl;
+      return;
+    }
+
+    cout << "Centros conectados desde: [" << v->id << " | " << v->nombre << "]" << endl;
+    Arista* j = v->ari;
+    if (j == NULL)
+    {
+      cout << "  (No tiene rutas de salida)" << endl;
+      return;
+    }
+
+    while (j != NULL)
+    {
+      cout << "  -> Destino: " << j->dest->id << " | " << j->dest->nombre << endl;
+      cout << "     Detalles: " << j->distancia << "km, " << "Ruta " << j->tipoRuta << endl;
+      j = j->sig;
+    }
+  }
+
+ 
+};
